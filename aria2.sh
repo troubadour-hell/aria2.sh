@@ -227,7 +227,6 @@ Stop_aria2() {
 Restart_aria2() {
     check_installed_status
     check_pid
-    [[ ! -z ${PID} ]] && /etc/init.d/aria2 stop
     systemctl restart aria2.service
 }
 Set_aria2() {
