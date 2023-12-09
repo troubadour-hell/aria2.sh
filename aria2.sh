@@ -167,29 +167,12 @@ LICENSE
     echo -e "${Info} Aria2 完美配置下载完成！"
 }
 Service_aria2() {
-    if [[ ${release} = "centos" ]]; then
-        wget -N -t2 -T3 "https://raw.githubusercontent.com/P3TERX/aria2.sh/master/service/aria2_centos" -O /etc/init.d/aria2 ||
-            wget -N -t2 -T3 "https://cdn.jsdelivr.net/gh/P3TERX/aria2.sh@master/service/aria2_centos" -O /etc/init.d/aria2 ||
-            wget -N -t2 -T3 "https://gh-raw.p3terx.com/P3TERX/aria2.sh/master/service/aria2_centos" -O /etc/init.d/aria2
-        [[ ! -s /etc/init.d/aria2 ]] && {
-            echo -e "${Error} Aria2服务 管理脚本下载失败 !"
-            exit 1
-        }
-        chmod +x /etc/init.d/aria2
-        chkconfig --add aria2
-        chkconfig aria2 on
-    else
-        wget -N -t2 -T3 "https://raw.githubusercontent.com/P3TERX/aria2.sh/master/service/aria2_debian" -O /etc/init.d/aria2 ||
-            wget -N -t2 -T3 "https://cdn.jsdelivr.net/gh/P3TERX/aria2.sh@master/service/aria2_debian" -O /etc/init.d/aria2 ||
-            wget -N -t2 -T3 "https://gh-raw.p3terx.com/P3TERX/aria2.sh/master/service/aria2_debian" -O /etc/init.d/aria2
-        [[ ! -s /etc/init.d/aria2 ]] && {
-            echo -e "${Error} Aria2服务 管理脚本下载失败 !"
-            exit 1
-        }
-        chmod +x /etc/init.d/aria2
-        update-rc.d -f aria2 defaults
-    fi
-    echo -e "${Info} Aria2服务 管理脚本下载完成 !"
+    wget -t2 -T3 -O- https://raw.githubusercontent.com/troubadour-hell/aria2.sh/master/service/aria2.service
+    [[ ! -s "aria2.service" ]] && echo -e "${Error} Aria2 守护服务文件 下载失败 !" && exit 1
+    mv -f aria2.service /etc/systemd/system/
+    [[ ! -e "/etc/systemd/system/aria2.service" ]] && echo -e "${Error} Aria2 守护服务安装失败！" && exit 1
+    systemctl enable aria2 --now
+    echo -e "${Info} Aria2服务 守护服务安装完成 !"
 }
 Installation_dependency() {
     if [[ ${release} = "centos" ]]; then
@@ -233,19 +216,19 @@ Start_aria2() {
     check_installed_status
     check_pid
     [[ ! -z ${PID} ]] && echo -e "${Error} Aria2 正在运行，请检查 !" && exit 1
-    /etc/init.d/aria2 start
+    systemctl start aria2.service
 }
 Stop_aria2() {
     check_installed_status
     check_pid
     [[ -z ${PID} ]] && echo -e "${Error} Aria2 没有运行，请检查 !" && exit 1
-    /etc/init.d/aria2 stop
+    systemctl stop aria2.service
 }
 Restart_aria2() {
     check_installed_status
     check_pid
     [[ ! -z ${PID} ]] && /etc/init.d/aria2 stop
-    /etc/init.d/aria2 start
+    systemctl restart aria2.service
 }
 Set_aria2() {
     check_installed_status
@@ -657,7 +640,7 @@ Set_iptables() {
     fi
 }
 Update_Shell() {
-    sh_new_ver=$(wget -qO- -t1 -T3 "https://raw.githubusercontent.com/P3TERX/aria2.sh/master/aria2.sh" | grep 'sh_ver="' | awk -F "=" '{print $NF}' | sed 's/\"//g' | head -1) && sh_new_type="github"
+    sh_new_ver=$(wget -qO- -t1 -T3 "https://raw.githubusercontent.com/troubadour-hell/aria2.sh/master/aria2.sh" | grep 'sh_ver="' | awk -F "=" '{print $NF}' | sed 's/\"//g' | head -1) && sh_new_type="github"
     [[ -z ${sh_new_ver} ]] && echo -e "${Error} 无法链接到 Github !" && exit 0
     if [[ -e "/etc/init.d/aria2" ]]; then
         rm -rf /etc/init.d/aria2
@@ -667,7 +650,7 @@ Update_Shell() {
     if [[ -n $(crontab_update_status) ]]; then
         crontab_update_stop
     fi
-    wget -N "https://raw.githubusercontent.com/P3TERX/aria2.sh/master/aria2.sh" && chmod +x aria2.sh
+    wget -N "https://raw.githubusercontent.com/troubadour-hell/aria2.sh/master/aria2.sh" && chmod +x aria2.sh
     echo -e "脚本已更新为最新版本[ ${sh_new_ver} ] !(注意：因为更新方式为直接覆盖当前运行的脚本，所以可能下面会提示一些报错，无视即可)" && exit 0
 }
 
