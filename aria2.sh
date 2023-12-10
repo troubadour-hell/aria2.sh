@@ -217,6 +217,7 @@ Start_aria2() {
     check_pid
     [[ ! -z ${PID} ]] && echo -e "${Error} Aria2 正在运行，请检查 !" && exit 1
     systemctl start aria2.service
+    View_Aria2
 }
 Stop_aria2() {
     check_installed_status
@@ -228,6 +229,7 @@ Restart_aria2() {
     check_installed_status
     check_pid
     systemctl restart aria2.service
+    View_Aria2
 }
 Set_aria2() {
     check_installed_status
@@ -600,12 +602,7 @@ Uninstall_aria2() {
         Save_iptables
         rm -rf "${aria2c}"
         rm -rf "${aria2_conf_dir}"
-        if [[ ${release} = "centos" ]]; then
-            chkconfig --del aria2
-        else
-            update-rc.d -f aria2 remove
-        fi
-        rm -rf "/etc/init.d/aria2"
+        rm -rf "/etc/systemd/system/aria2.service"
         echo && echo "Aria2 卸载完成 !" && echo
     else
         echo && echo "卸载已取消..." && echo
@@ -641,8 +638,8 @@ Set_iptables() {
 Update_Shell() {
     sh_new_ver=$(wget -qO- -t1 -T3 "https://raw.githubusercontent.com/troubadour-hell/aria2.sh/master/aria2.sh" | grep 'sh_ver="' | awk -F "=" '{print $NF}' | sed 's/\"//g' | head -1) && sh_new_type="github"
     [[ -z ${sh_new_ver} ]] && echo -e "${Error} 无法链接到 Github !" && exit 0
-    if [[ -e "/etc/init.d/aria2" ]]; then
-        rm -rf /etc/init.d/aria2
+    if [[ -e "/etc/systemd/system/aria2.service" ]]; then
+        rm -rf /etc/systemd/system/aria2.service
         Service_aria2
         Restart_aria2
     fi
