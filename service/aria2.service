@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=root
-ExecStartPre=/bin/rm /root/.aria2c/aria2.log
+ExecStartPre=/bin/cp -f /dev/null /root/.aria2c/aria2.log
 ExecStart=/usr/local/bin/aria2c --console-log-level=warn --conf-path="/root/.aria2c/aria2.conf"
 TimeoutStopSec=20
 Restart=on-failure
